@@ -5,10 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WL Studio - Agenda</title>
   </head>
+  <script type="module">
+  import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  async function agendar() {
+    const nome = document.getElementById("nome").value;
+    const telefone = document.getElementById("telefone").value;
+    const data = document.getElementById("data").value;
+    const horario = document.getElementById("horario").value;
+
+    if (!nome || !telefone || !data || !horario) {
+      document.getElementById("msg").innerText = "Preencha tudo!";
+      return;
+    }
+
+    try {
+      await addDoc(collection(window.db, "agendamentos"), {
+        nome,
+        telefone,
+        data,
+        horario,
+        criadoEm: new Date()
+      });
+
+      document.getElementById("msg").innerText = "Horário agendado com sucesso!";
+      document.getElementById("nome").value = "";
+      document.getElementById("telefone").value = "";
+      document.getElementById("data").value = "";
+      document.getElementById("horario").value = "";
+    } catch (e) {
+      document.getElementById("msg").innerText = "Erro ao agendar.";
+      console.error(e);
+    }
+  }
+
+  window.agendar = agendar;
+  </script>
+  
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-  </body>
 </html>
 <section id="agendamento">
   <h2>Agendar horário</h2>
