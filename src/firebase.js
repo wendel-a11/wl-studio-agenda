@@ -4,13 +4,15 @@
   import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
   const firebaseConfig = {
-    apiKey: "COLE_AQUI",
-    authDomain: "COLE_AQUI",
-    projectId: "wl-estúdio-agenda",
-    storageBucket: "COLE_AQUI",
-    messagingSenderId: "COLE_AQUI",
-    appId: "COLE_AQUI"
+const firebaseConfig = {
+    apiKey: "AIzaSyCFqzrPKFDzBD6-W1WU646IVRB8d6pb4JQ",
+    authDomain: "wl-studio-agenda.firebaseapp.com",
+    projectId: "wl-studio-agenda",
+    storageBucket: "wl-studio-agenda.firebasestorage.app",
+    messagingSenderId: "794918704806",
+    appId: "1:794918704806:web:9851af91514bdb70b04667"
   };
+
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
