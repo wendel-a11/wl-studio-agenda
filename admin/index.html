@@ -19,7 +19,8 @@
   <ul id="lista"></ul>
 </div>
 
-<script src="firebase.js"></script>
+<!-- IMPORTANTE: caminho correto -->
+<script src="../firebase.js"></script>
 
 <script type="module">
   import { collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -60,11 +61,4 @@
 
   window.excluir = async function (id) {
     if (confirm("Cancelar esse agendamento?")) {
-      await deleteDoc(doc(window.db, "agendamentos", id));
-      carregarAgendamentos();
-    }
-  };
-</script>
-
-</body>
-</html>
+      await deleteDoc(doc(window.db, "agendamentos", id))
