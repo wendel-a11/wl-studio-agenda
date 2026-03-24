@@ -1,70 +1,781 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Painel Admin - WL Studio</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WL Studio — Agenda</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100,300..900&family=Fraunces:opsz,wght@9..144,300..900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg0:#07080c;
+      --bg1:#0b0e17;
+      --ink:#eef0ff;
+      --muted: rgba(238,240,255,.72);
+      --muted2: rgba(238,240,255,.55);
+      --line: rgba(238,240,255,.12);
+      --line2: rgba(238,240,255,.18);
+
+      --a:#b8ff5a;      /* lime */
+      --b:#8b5cff;      /* violet */
+      --c:#38d6ff;      /* cyan */
+      --danger:#ff5a7a;
+      --ok:#53ffa6;
+
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --shadow2: 0 10px 30px rgba(0,0,0,.45);
+      --radius: 22px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: "Archivo", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 800px at 18% 10%, rgba(139,92,255,.28), transparent 55%),
+        radial-gradient(900px 700px at 82% 18%, rgba(56,214,255,.22), transparent 58%),
+        radial-gradient(900px 700px at 55% 90%, rgba(184,255,90,.18), transparent 58%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+    }
+
+    /* Subtle animated grain */
+    .grain{
+      pointer-events:none;
+      position:fixed; inset:-40%;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+      opacity:.18;
+      transform: translate3d(0,0,0);
+      animation: grainMove 10s steps(10) infinite;
+    }
+    @keyframes grainMove{
+      0%{ transform: translate(-2%, -2%); }
+      20%{ transform: translate(-4%, 1%); }
+      40%{ transform: translate(2%, -3%); }
+      60%{ transform: translate(4%, 2%); }
+      80%{ transform: translate(-1%, 4%); }
+      100%{ transform: translate(-2%, -2%); }
+    }
+
+    /* Floating aurora blobs */
+    .aurora{
+      position:fixed; inset:0;
+      pointer-events:none;
+      filter: blur(30px) saturate(1.1);
+      opacity:.65;
+    }
+    .blob{
+      position:absolute;
+      width: min(52vw, 520px);
+      height: min(52vw, 520px);
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, rgba(184,255,90,.35), transparent 55%),
+                  radial-gradient(circle at 70% 60%, rgba(56,214,255,.30), transparent 60%),
+                  radial-gradient(circle at 40% 75%, rgba(139,92,255,.30), transparent 58%);
+      animation: floaty 12s ease-in-out infinite;
+    }
+    .blob.b2{
+      width: min(60vw, 640px);
+      height: min(60vw, 640px);
+      left:auto;
+      right:-18%;
+      top:-10%;
+      background: radial-gradient(circle at 30% 30%, rgba(56,214,255,.30), transparent 55%),
+                  radial-gradient(circle at 70% 60%, rgba(139,92,255,.28), transparent 60%),
+                  radial-gradient(circle at 40% 75%, rgba(184,255,90,.22), transparent 58%);
+      animation-duration: 14s;
+      animation-delay: -2s;
+    }
+    .blob.b1{ left:-22%; top:28%; }
+    @keyframes floaty{
+      0%,100%{ transform: translate3d(0,0,0) scale(1); }
+      50%{ transform: translate3d(18px,-14px,0) scale(1.03); }
+    }
+
+    .wrap{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+
+    header{
+      position:sticky; top:0;
+      z-index:30;
+      backdrop-filter: blur(14px);
+      background: linear-gradient(180deg, rgba(7,8,12,.72), rgba(7,8,12,.25));
+      border-bottom: 1px solid rgba(238,240,255,.08);
+    }
+    .nav{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+    }
+    .brand{
+      display:flex;
+      align-items:baseline;
+      gap:12px;
+      text-decoration:none;
+      color: var(--ink);
+      min-width: 220px;
+    }
+    .mark{
+      width: 34px; height: 34px;
+      border-radius: 12px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(238,240,255,.22), transparent 55%),
+        linear-gradient(135deg, rgba(139,92,255,.95), rgba(56,214,255,.75), rgba(184,255,90,.65));
+      box-shadow: 0 12px 30px rgba(139,92,255,.18);
+      border: 1px solid rgba(238,240,255,.18);
+    }
+    .brand strong{
+      font-family: "Fraunces", serif;
+      font-weight: 650;
+      letter-spacing: .2px;
+      font-size: 18px;
+      line-height:1;
+    }
+    .brand span{
+      color: var(--muted2);
+      font-size: 12px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      margin-left: 6px;
+    }
+    .pill{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(238,240,255,.14);
+      background: rgba(12,14,24,.35);
+      box-shadow: var(--shadow2);
+    }
+    .pill .dot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--ok);
+      box-shadow: 0 0 0 4px rgba(83,255,166,.12);
+    }
+    .pill small{
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .02em;
+      white-space:nowrap;
+    }
+
+    main{
+      max-width: 1100px;
+      width:100%;
+      margin: 0 auto;
+      padding: 34px 16px 44px;
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 22px;
+      align-items:start;
+    }
+
+    @media (max-width: 920px){
+      main{ grid-template-columns: 1fr; padding-top: 22px; }
+      .brand{ min-width: unset; }
+    }
+
+    .hero{
+      position:relative;
+      border-radius: var(--radius);
+      border: 1px solid rgba(238,240,255,.14);
+      background:
+        radial-gradient(900px 420px at 20% 18%, rgba(139,92,255,.18), transparent 60%),
+        radial-gradient(900px 420px at 78% 12%, rgba(56,214,255,.12), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      padding: clamp(18px, 2.6vw, 26px);
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute; inset:-1px;
+      background:
+        radial-gradient(600px 180px at 20% 0%, rgba(184,255,90,.14), transparent 60%),
+        radial-gradient(520px 220px at 95% 30%, rgba(139,92,255,.18), transparent 60%);
+      opacity:.8;
+      pointer-events:none;
+      mask: linear-gradient(#000, transparent 70%);
+    }
+
+    .kicker{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      color: var(--muted);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-size: 12px;
+      margin: 0 0 10px;
+      position:relative;
+      z-index:1;
+    }
+    .kicker .rule{
+      height:1px; flex:1;
+      background: linear-gradient(90deg, rgba(238,240,255,.0), rgba(238,240,255,.22), rgba(238,240,255,.0));
+    }
+
+    h1{
+      font-family: "Fraunces", serif;
+      font-weight: 650;
+      font-size: clamp(34px, 4.1vw, 54px);
+      line-height: 1.03;
+      margin: 0 0 12px;
+      position:relative;
+      z-index:1;
+      letter-spacing: .2px;
+    }
+
+    .lede{
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.6;
+      max-width: 54ch;
+      position:relative;
+      z-index:1;
+    }
+
+    .meta{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 18px;
+      position:relative;
+      z-index:1;
+    }
+    .meta .item{
+      border-radius: 16px;
+      border: 1px solid rgba(238,240,255,.12);
+      background: rgba(10,12,20,.25);
+      padding: 12px 12px;
+      min-height: 72px;
+    }
+    .meta .label{
+      color: var(--muted2);
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .meta .value{
+      font-size: 14px;
+      color: rgba(238,240,255,.92);
+      line-height:1.35;
+    }
+    @media (max-width: 520px){
+      .meta{ grid-template-columns: 1fr; }
+    }
+
+    /* Booking panel */
+    .panel{
+      border-radius: var(--radius);
+      border: 1px solid rgba(238,240,255,.14);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .panelHead{
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid rgba(238,240,255,.12);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 14px;
+      background:
+        radial-gradient(500px 160px at 12% 0%, rgba(56,214,255,.14), transparent 60%),
+        radial-gradient(500px 160px at 90% 20%, rgba(184,255,90,.10), transparent 60%);
+    }
+    .panelHead h2{
+      margin:0;
+      font-family: "Fraunces", serif;
+      font-weight: 620;
+      font-size: 20px;
+      letter-spacing:.2px;
+    }
+    .panelHead p{
+      margin:6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height:1.45;
+      max-width: 40ch;
+    }
+
+    .badge{
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(238,240,255,.14);
+      background: rgba(7,8,12,.35);
+      color: rgba(238,240,255,.86);
+      font-size: 12px;
+      letter-spacing:.06em;
+      text-transform: uppercase;
+      white-space:nowrap;
+    }
+
+    form{
+      padding: 16px 18px 18px;
+      display:grid;
+      gap: 12px;
+    }
+
+    .field{
+      display:grid;
+      gap: 8px;
+    }
+    label{
+      font-size: 12px;
+      color: var(--muted2);
+      letter-spacing:.10em;
+      text-transform: uppercase;
+    }
+
+    .control{
+      position:relative;
+    }
+
+    input, select{
+      width:100%;
+      padding: 12px 12px 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(238,240,255,.14);
+      background: rgba(9,11,18,.35);
+      color: rgba(238,240,255,.92);
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+      font-size: 14px;
+    }
+    input::placeholder{ color: rgba(238,240,255,.42); }
+    input:focus, select:focus{
+      border-color: rgba(56,214,255,.45);
+      background: rgba(9,11,18,.48);
+      transform: translateY(-1px);
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 520px){
+      .row{ grid-template-columns: 1fr; }
+    }
+
+    .actions{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      margin-top: 2px;
+    }
+
+    .btn{
+      cursor:pointer;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 14px;
+      font-weight: 650;
+      letter-spacing:.02em;
+      transition: transform .15s ease, filter .15s ease, box-shadow .2s ease, background .2s ease;
+      user-select:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      min-height: 44px;
+    }
+    .btnPrimary{
+      flex:1;
+      color: #07100b;
+      background:
+        linear-gradient(135deg, rgba(184,255,90,1), rgba(56,214,255,.92));
+      box-shadow: 0 18px 50px rgba(56,214,255,.16), 0 14px 40px rgba(184,255,90,.12);
+    }
+    .btnGhost{
+      color: rgba(238,240,255,.92);
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(238,240,255,.14);
+    }
+    .btn:hover{ transform: translateY(-1px); filter: brightness(1.04); }
+    .btn:active{ transform: translateY(0px) scale(.99); }
+    .btn[disabled]{ opacity:.65; cursor:not-allowed; transform:none; }
+
+    .icon{
+      width: 18px; height: 18px; display:inline-block;
+    }
+
+    .msg{
+      margin: 10px 0 0;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(238,240,255,.12);
+      background: rgba(7,8,12,.35);
+      color: rgba(238,240,255,.88);
+      font-size: 13px;
+      line-height: 1.45;
+      display:none;
+    }
+    .msg.show{ display:block; }
+    .msg.ok{
+      border-color: rgba(83,255,166,.28);
+      background: rgba(83,255,166,.08);
+    }
+    .msg.err{
+      border-color: rgba(255,90,122,.28);
+      background: rgba(255,90,122,.08);
+    }
+
+    /* Reveal animation */
+    .reveal{
+      opacity:0;
+      transform: translateY(12px);
+      animation: up .7s ease forwards;
+    }
+    .d1{ animation-delay: .05s;}
+    .d2{ animation-delay: .12s;}
+    .d3{ animation-delay: .19s;}
+    .d4{ animation-delay: .26s;}
+    @keyframes up{
+      to{ opacity:1; transform: translateY(0); }
+    }
+
+    footer{
+      max-width:1100px;
+      width:100%;
+      margin: 0 auto;
+      padding: 18px 16px 34px;
+      color: rgba(238,240,255,.52);
+      font-size: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap:wrap;
+    }
+    footer a{
+      color: rgba(238,240,255,.72);
+      text-decoration:none;
+      border-bottom: 1px solid rgba(238,240,255,.22);
+    }
+    footer a:hover{ color: rgba(238,240,255,.92); }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .grain, .blob{ animation:none !important; }
+      .reveal{ animation:none; opacity:1; transform:none; }
+      *{ scroll-behavior:auto !important; }
+    }
+  </style>
 </head>
+
 <body>
+  <div class="aurora" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+  </div>
+  <div class="grain" aria-hidden="true"></div>
 
-<h2>Painel Admin - Agendamentos</h2>
+  <div class="wrap">
+    <header>
+      <div class="nav">
+        <a class="brand" href="#agendar" aria-label="WL Studio — ir para agendamento">
+          <span class="mark" aria-hidden="true"></span>
+          <div>
+            <strong>WL Studio</strong>
+            <span>agenda</span>
+          </div>
+        </a>
 
-<input type="password" id="senha" placeholder="Senha admin">
-<button onclick="entrarAdmin()">Entrar</button>
+        <div class="pill" role="status" aria-live="polite" aria-label="Status do sistema">
+          <span class="dot" aria-hidden="true"></span>
+          <small id="statusText">Pronto para agendar</small>
+        </div>
+      </div>
+    </header>
 
-<hr>
+    <main>
+      <section class="hero reveal d1" aria-label="Apresentação">
+        <div class="kicker">
+          <span>Agendamento rápido</span>
+          <span class="rule" aria-hidden="true"></span>
+          <span>sem complicação</span>
+        </div>
 
-<div id="painel" style="display:none">
-  <h3>Agendamentos</h3>
-  <ul id="lista"></ul>
-</div>
+        <h1>Marque seu horário com estilo — em menos de 30 segundos.</h1>
+        <p class="lede">
+          Preencha seus dados, escolha a data e selecione um horário disponível. O pedido é enviado direto para o Firestore.
+        </p>
 
-<script src="firebase.js"></script>
+        <div class="meta" aria-label="Informações">
+          <div class="item reveal d2">
+            <div class="label">Confirmação</div>
+            <div class="value">Mensagem instantânea na tela</div>
+          </div>
+          <div class="item reveal d3">
+            <div class="label">Dados</div>
+            <div class="value">Nome + WhatsApp + data/horário</div>
+          </div>
+          <div class="item reveal d4">
+            <div class="label">Boas práticas</div>
+            <div class="value">Validação e prevenção de clique duplo</div>
+          </div>
+        </div>
+      </section>
 
-<script type="module">
-  import { collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+      <section class="panel reveal d2" id="agendar" aria-label="Formulário de agendamento">
+        <div class="panelHead">
+          <div>
+            <h2>Agendar horário</h2>
+            <p>Escolha uma data a partir de hoje e selecione um horário. Depois é só confirmar.</p>
+          </div>
+          <div class="badge" title="Dica">WL • Studio</div>
+        </div>
 
-  const SENHA_ADMIN = "wl@00";
+        <form id="form-agendamento" novalidate>
+          <div class="field">
+            <label for="nome">Seu nome</label>
+            <div class="control">
+              <input id="nome" name="nome" type="text" placeholder="Ex.: William" autocomplete="name" required />
+            </div>
+          </div>
 
-  window.entrarAdmin = async function () {
-    const senha = document.getElementById("senha").value;
-    if (senha !== SENHA_ADMIN) {
-      alert("Senha incorreta");
-      return;
+          <div class="field">
+            <label for="telefone">Seu WhatsApp</label>
+            <div class="control">
+              <input id="telefone" name="telefone" type="tel" placeholder="Ex.: (11) 99999-9999" autocomplete="tel" inputmode="tel" required />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="data">Data</label>
+              <div class="control">
+                <input id="data" name="data" type="date" required />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="horario">Horário</label>
+              <div class="control">
+                <select id="horario" name="horario" required>
+                  <option value="">Selecione o horário</option>
+                  <option>07:00</option><option>08:00</option><option>09:00</option>
+                  <option>10:00</option><option>11:00</option><option>12:00</option>
+                  <option>13:00</option><option>14:00</option><option>15:00</option>
+                  <option>16:00</option><option>17:00</option><option>18:00</option>
+                  <option>19:00</option><option>20:00</option><option>21:00</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn btnPrimary" id="btnAgendar" type="submit">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M7 3v3M17 3v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M4.5 9.5h15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M6 6h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2"/>
+                <path d="M8 13h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Confirmar agendamento
+            </button>
+
+            <button class="btn btnGhost" type="button" id="btnLimpar" title="Limpar campos">
+              Limpar
+            </button>
+          </div>
+
+          <p class="msg" id="msg" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+
+    <footer>
+      <span>© <span id="year"></span> WL Studio. Todos os direitos reservados.</span>
+      <span>Dica: se seu projeto usa Vite/React, mantenha este HTML como página standalone ou mova para um componente.</span>
+    </footer>
+  </div>
+
+  <script type="module">
+    /**
+     * Requisitos:
+     * - Este arquivo assume que você já inicializa o Firebase em outro lugar e expõe `window.db` (Firestore)
+     * - Se `window.db` não existir, o formulário funciona visualmente e mostra aviso.
+     */
+    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const $ = (sel) => document.querySelector(sel);
+
+    const form = $("#form-agendamento");
+    const msg = $("#msg");
+    const statusText = $("#statusText");
+    const btnAgendar = $("#btnAgendar");
+    const btnLimpar = $("#btnLimpar");
+
+    const nome = $("#nome");
+    const telefone = $("#telefone");
+    const data = $("#data");
+    const horario = $("#horario");
+
+    // Set min date to today
+    const todayISO = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    const today = `${todayISO.getFullYear()}-${pad(todayISO.getMonth()+1)}-${pad(todayISO.getDate())}`;
+    data.min = today;
+
+    $("#year").textContent = new Date().getFullYear();
+
+    function setStatus(text) {
+      statusText.textContent = text;
     }
 
-    document.getElementById("painel").style.display = "block";
-    carregarAgendamentos();
-  };
+    function showMsg(text, type = "ok") {
+      msg.textContent = text;
+      msg.classList.add("show");
+      msg.classList.toggle("ok", type === "ok");
+      msg.classList.toggle("err", type === "err");
+    }
 
-  async function carregarAgendamentos() {
-    const lista = document.getElementById("lista");
-    lista.innerHTML = "";
+    function clearMsg() {
+      msg.classList.remove("show", "ok", "err");
+      msg.textContent = "";
+    }
 
-    const querySnapshot = await getDocs(collection(window.db, "agendamentos"));
+    function normalizePhone(raw) {
+      // mantém + e números
+      return raw.replace(/[^\d+]/g, "").trim();
+    }
 
-    querySnapshot.forEach((docu) => {
-      const data = docu.data();
+    function isValidPhone(raw) {
+      const p = normalizePhone(raw);
+      // Aceita BR comum: 10-13 dígitos (com DDI opcional)
+      const digits = p.replace(/\D/g, "");
+      return digits.length >= 10 && digits.length <= 13;
+    }
 
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <strong>${data.nome}</strong><br>
-        ${data.telefone}<br>
-        ${data.data} - ${data.horario}<br>
-        <button onclick="excluir('${docu.id}')">Cancelar</button>
-        <hr>
-      `;
-      lista.appendChild(li);
+    function lockForm(locked) {
+      btnAgendar.disabled = locked;
+      nome.disabled = locked;
+      telefone.disabled = locked;
+      data.disabled = locked;
+      horario.disabled = locked;
+      btnLimpar.disabled = locked;
+      setStatus(locked ? "Enviando..." : "Pronto para agendar");
+    }
+
+    btnLimpar.addEventListener("click", () => {
+      form.reset();
+      clearMsg();
+      nome.focus();
     });
-  }
 
-  window.excluir = async function (id) {
-    if (confirm("Cancelar esse agendamento?")) {
-      await deleteDoc(doc(window.db, "agendamentos", id));
-      carregarAgendamentos();
-    }
-  };
-</script>
+    // Micro effect: tilt glow follows pointer on panel
+    const panel = document.querySelector(".panel");
+    panel.addEventListener("pointermove", (e) => {
+      const r = panel.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      const y = (e.clientY - r.top) / r.height;
+      panel.style.background = `
+        radial-gradient(700px 260px at ${Math.round(x*100)}% ${Math.round(y*100)}%, rgba(56,214,255,.10), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02))
+      `;
+    });
+    panel.addEventListener("pointerleave", () => {
+      panel.style.background = `linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02))`;
+    });
 
+    // Scroll reveal (IntersectionObserver)
+    const io = new IntersectionObserver((entries) => {
+      for (const en of entries) {
+        if (en.isIntersecting) en.target.style.animationPlayState = "running";
+      }
+    }, { threshold: .18 });
+
+    document.querySelectorAll(".reveal").forEach(el => {
+      el.style.animationPlayState = "paused";
+      io.observe(el);
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      clearMsg();
+
+      const nomeVal = nome.value.trim();
+      const telVal = telefone.value.trim();
+      const dataVal = data.value;
+      const horarioVal = horario.value;
+
+      // HTML validation first
+      if (!nomeVal || !telVal || !dataVal || !horarioVal) {
+        showMsg("Preencha todos os campos para confirmar.", "err");
+        setStatus("Campos incompletos");
+        return;
+      }
+
+      // Date validation
+      if (dataVal < today) {
+        showMsg("A data não pode ser anterior a hoje.", "err");
+        setStatus("Data inválida");
+        return;
+      }
+
+      // Phone validation
+      if (!isValidPhone(telVal)) {
+        showMsg("Informe um WhatsApp válido (com DDD).", "err");
+        setStatus("Telefone inválido");
+        telefone.focus();
+        return;
+      }
+
+      if (!window.db) {
+        showMsg("Firestore não inicializado. Você precisa expor `window.db` após configurar o Firebase.", "err");
+        setStatus("Configuração pendente");
+        return;
+      }
+
+      lockForm(true);
+
+      try {
+        await addDoc(collection(window.db, "agendamentos"), {
+          nome: nomeVal,
+          telefone: normalizePhone(telVal),
+          data: dataVal,
+          horario: horarioVal,
+          criadoEm: new Date()
+        });
+
+        showMsg("Horário agendado com sucesso! Se quiser, agende outro horário.", "ok");
+        form.reset();
+        data.min = today;
+        nome.focus();
+        setStatus("Agendamento confirmado");
+      } catch (e) {
+        console.error(e);
+        showMsg("Erro ao agendar. Tente novamente em alguns instantes.", "err");
+        setStatus("Erro no envio");
+      } finally {
+        lockForm(false);
+      }
+    });
+  </script>
 </body>
 </html>
